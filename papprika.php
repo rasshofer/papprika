@@ -21,6 +21,8 @@ class Application {
 	private $events = array();
 	private $method;
 	private $request = array();
+	private $last = array();
+	private $conditions = array();
 
 	// Initialize
 	public function __construct($sub = null) {
@@ -81,14 +83,16 @@ class Application {
 					$callbacks[] = $argument;
 				}
 			}
-		}
+		}		
 		if(count($callbacks) > 0) {
 			if(is_array($patterns)) {
 				foreach($patterns AS $pattern) {
 					$this->routes[$method][$pattern] = $callbacks;
 				}
+				$this->last = $patterns;
 			} else {
 				$this->routes[$method][$patterns] = $callbacks;
+				$this->last = array($patterns);
 			}
 		}
 		return $this;
@@ -132,12 +136,24 @@ class Application {
 		}
 	}
 
+	// Simple unit testing
+	public function assert($variable, $condition) {
+		if(!empty($this->last)) {
+			foreach($this->last AS $pattern) {
+				$this->conditions[$pattern][] = array($variable, $condition);
+			}
+		}
+		return $this;
+	}
+
 	// Run application
 	public function run() {
 		$found = false;
+		$this->trigger('before');
 		foreach($this->routes[$this->method] AS $pattern => $callbacks) {
 			$route = array();
 			$variables = array();
+			$conditions = $this->conditions[$pattern] ?: array();
 			$pattern = $this->sub.$pattern;
 			foreach(preg_split('~/~', $pattern, -1, PREG_SPLIT_NO_EMPTY) AS $part) {
 				preg_match('/^\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$/', $part, $matches);		
@@ -147,9 +163,8 @@ class Application {
 				} else {
 					$route[] = preg_quote($part);
 				}
-			}		
+			}
 			if(preg_match('/^\/'.implode('\/', $route).'$/', $this->uri)) {
-				$this->trigger('before');
 				$parameters = array();
 				preg_match_all('/^\/'.implode('\/', $route).'$/', $this->uri, $matches);
 				if(!empty($matches[1])) {
@@ -159,17 +174,22 @@ class Application {
 						$i++;
 					}
 				}
+				foreach($conditions AS $condition) {
+					if(!preg_match('/^'.$condition[1].'$/', $parameters[$condition[0]])) {
+						continue 2;
+					}
+				}
 				foreach($callbacks AS $callback) {
 					call_user_func_array($callback, $parameters);
 				}
-				$this->trigger('after');
 				$found = true;
-				break;
+				continue;
 			}
 		}
 		if(!$found) {
 			$this->trigger('error');
 		}
+		$this->trigger('after');
 	}
 
 }

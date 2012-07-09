@@ -49,7 +49,7 @@ $app->get('/news', function() use ($news) {
 		echo '<li><a href="/news/'.$id.'">'.$post['title'].'</a></li>';
 	}
 	echo '</ul>';
-})->get('/news/:id', function($id) use ($news) {
+})->get(array('/news/:id', '/blog/:id'), function($id) use ($news) {
 	if(!array_key_exists($id, $news)) {
 		die('Post #'.$id.' was not be found...');
 	}
@@ -57,7 +57,11 @@ $app->get('/news', function() use ($news) {
 	echo '<h1>'.$news[$id]['title'].'</h1>';
 	echo '<h2>'.$news[$id]['date'].'</h2>';
 	echo nl2br($news[$id]['title']);
-});
+})->assert('id', '\d+');
+
+$app->get('/hello/:name', function($name) {
+	echo 'Hello, '.$name;
+})->assert('name', '([a-zA-Z]+)');
 
 $app->post('/contact', function(papprika\Application $app) {
 	$message = $app->request('message');
