@@ -5,4 +5,4 @@ papprika is a small but spicy application toolkit created to help you building a
 Check out [papprika.org](http://papprika.org/) for a full documentation and some examples…
 
 ## License
-papprika is for free usage in both personal and commerical environments with an open sourcecode, licensed under the MIT license.
+papprika is for free usage in both personal and commerical environments with an open sourcecode, licensed under the [MIT license](http://papprika.org/license).
