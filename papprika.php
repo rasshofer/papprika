@@ -7,12 +7,13 @@
  * @copyright 2012 Thomas Rasshofer
  * @link http://papprika.org/
  * @license http://papprika.org/license
- * @version 0.1
+ * @version 0.2
  * @package papprika
  */
 
 namespace papprika;
 
+// papprika\Application
 class Application {
 
 	private $uri;
@@ -83,7 +84,7 @@ class Application {
 					$callbacks[] = $argument;
 				}
 			}
-		}		
+		}
 		if(count($callbacks) > 0) {
 			if(is_array($patterns)) {
 				foreach($patterns AS $pattern) {
@@ -122,7 +123,7 @@ class Application {
 					$callbacks[] = $argument;
 				}
 			}
-		}		
+		}
 		if(count($callbacks) > 0) {
 			$this->events[$event] = $callbacks;
 		}
@@ -190,6 +191,156 @@ class Application {
 			$this->trigger('error');
 		}
 		$this->trigger('after');
+	}
+
+}
+
+// papprika\Template
+class Template {
+
+	protected $_file = '';
+	protected $_data;
+	protected $_output = '';
+
+	// Initialize
+	public function __construct($file, $data = array()) {
+		if(!is_file($file)) {
+			throw new \Exception('Template "'.$file.'" couldn\'t be found.');
+		}
+		$this->_file = $file;
+		if(!empty($data)) {
+			foreach($data AS $key => $value) {
+				$this->_data->$key = $value;
+			}
+		}
+	}
+
+	// Get variable(s)
+	public function __get($name) {
+		if(substr($name, 0, 1) == '_') {
+			throw new \Exception('Variable-names aren\'t allowed to start with an underscore.');
+		}
+		return $this->_data->$name;
+	}
+
+	// Set variable(s)
+	public function __set($key, $value) {
+		if(substr($key, 0, 1) == '_') {
+			throw new \Exception('Variable-names aren\'t allowed to start with an underscore ('.$key.').');
+		}
+		$this->_data->$key = $value;
+	}
+
+	// Output template
+	public function __toString() {
+		if(!$this->_output) {
+			$this->parse();
+		}
+		return $this->_output;
+	}
+
+	// Parse template
+	private function parse() {
+		$this->beforeParse();
+		ob_start();
+		include($this->_file);
+		$this->_output = ob_get_contents();		
+		ob_end_clean();
+		$this->afterParse();
+	}
+	
+	// Extend papprika\Template and define if you want to do something before parsing the template
+	private function beforeParse() { }
+
+	// Extend papprika\Template and define if you want to do something after parsing the template
+	private function afterParse() { }
+		
+}
+
+namespace papprika\MySQL;
+
+// papprika\MySQL\Connection
+class Connection {
+
+	private $link = null;
+
+	// Initialize
+	public function __construct($server, $username, $password, $database) {
+		$link = @mysql_connect($server, $username, $password);
+		if(!$link) {
+			throw new \Exception('Couldn\'t connect to MySQL (' . mysql_error().').');
+		}
+		if(!@mysql_select_db($database, $link)) {
+			throw new \Exception('Couldn\'t use Database "'.$database.'" ('.mysql_error().').');
+		}
+		$this->link = $link;
+	}
+
+	// Close connection
+	public function __destruct() {
+		return mysql_close($this->link);
+		return false;
+	}
+	
+	// Get link
+	public function get() {
+		return $this->link;
+	}
+	
+	// Set charset
+	public function charset($charset) {
+		return mysql_set_charset($charset, $this->link);	
+	}
+
+}
+
+// papprika\MySQL\Query
+class Query {
+
+	private $link;
+	private $result;
+	
+	// Initialize
+	public function __construct() {
+		$arguments = func_get_args();
+		$query = array_shift($arguments);
+		$link = array_pop($arguments);
+		if(get_class($link) != 'papprika\MySQL\Connection') {
+			throw new \Exception('Missing MySQL-Connection-Link.');
+		}
+		$this->link = $link->get();
+		if(count($arguments) > 0) {
+			foreach($arguments AS $key => $val) {
+				$arguments[$key] = mysql_real_escape_string($val, $this->link);
+			}
+			$query = vsprintf($query, $arguments);
+		}
+		$result = mysql_query($query, $this->link);
+		if(!$result) {
+			throw new \Exception('Invalid MySQL-Query (' . mysql_error().').');
+		}
+		$this->result = $result;
+		return $this;
+	}
+	
+	public function __destruct() {
+		mysql_free_result($this->result);
+	}
+
+	public function fetch() {
+		return mysql_fetch_object($this->result);	
+	}
+	
+	public function id() {
+		return mysql_insert_id($this->link);	
+	}
+	
+	public function rows() {
+		return mysql_num_rows($this->result);	
+	}
+
+	public function affected() {
+		return mysql_affected_rows($this->link);	
 	}
 
 }
