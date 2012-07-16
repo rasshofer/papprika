@@ -268,7 +268,7 @@ class Connection {
 	public function __construct($server, $username, $password, $database) {
 		$link = @mysql_connect($server, $username, $password);
 		if(!$link) {
-			throw new \Exception('Couldn\'t connect to MySQL (' . mysql_error().').');
+			throw new \Exception('Couldn\'t connect to MySQL ('.mysql_error().').');
 		}
 		if(!@mysql_select_db($database, $link)) {
 			throw new \Exception('Couldn\'t use Database "'.$database.'" ('.mysql_error().').');
@@ -317,7 +317,7 @@ class Query {
 		}
 		$result = mysql_query($query, $this->link);
 		if(!$result) {
-			throw new \Exception('Invalid MySQL-Query (' . mysql_error().').');
+			throw new \Exception('Invalid MySQL-Query ('.mysql_error().').');
 		}
 		$this->result = $result;
 		return $this;
