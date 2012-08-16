@@ -266,6 +266,10 @@ namespace papprika {
 		private $extension;
 		private $modified;
 		private $size;
+
+		private $width;
+		private $height;
+		private $mime;
 	
 		public function __construct($file) {
 			if(!is_file($file)) {
@@ -278,6 +282,12 @@ namespace papprika {
 			$this->extension = $info['extension'];
 			$this->modified = filemtime($file);
 			$this->size = filesize($file);
+			$size = getimagesize($file);
+			if($size) {
+				$this->width = $size[0];
+				$this->height = $size[1];
+				$this->mime = $size['mime'];
+			}
 		}
 	
 		public function name() {
@@ -310,6 +320,40 @@ namespace papprika {
 				return '0,00 MB';
 			} else {
 				return (number_format($this->size/pow(1024, ($i = floor(log($this->size, 1024)))), $decimals, $decimalPoint, $thousandsSeparator).$sizes[$i]);
+			}
+		}
+
+		public function width() {
+			return $this->width;
+		}
+
+		public function height() {
+			return $this->height;
+		}
+
+		public function mime() {
+			return $this->mime;
+		}
+
+		public function max($max) { 
+			if($this->width > $this->height) {
+				$this->maxWidth($max);
+			} else {
+				$this->maxHeight($max);
+			}
+		}
+
+		public function maxWidth($max) { 	
+			if($this->width > $max) {
+				$this->height = round($max/$this->width*$this->height);
+				$this->width = $max;
+			}
+		}  
+
+		public function maxHeight($max) { 	
+			if($this->height > $max) {
+				$this->width = round($max/$this->height*$this->width);
+				$this->height = $max;
 			}
 		}
 
