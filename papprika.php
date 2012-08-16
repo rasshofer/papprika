@@ -257,6 +257,64 @@ namespace papprika {
 			
 	}
 
+	// papprika\File
+	class File {
+	
+		private $file;
+		private $name;
+		private $filename;
+		private $extension;
+		private $modified;
+		private $size;
+	
+		public function __construct($file) {
+			if(!is_file($file)) {
+				throw new \Exception('File "'.$file.'" couldn\'t be found.');
+			}
+			$info = pathinfo($file);
+			$this->file = $file;
+			$this->name = $info['filename'];
+			$this->filename = basename($file);
+			$this->extension = $info['extension'];
+			$this->modified = filemtime($file);
+			$this->size = filesize($file);
+		}
+	
+		public function name() {
+			return $this->name;
+		}
+		
+		public function filename() {
+			return $this->filename;
+		}
+		
+		public function extension() {
+			return $this->extension;
+		}
+		
+		public function url() {
+			return $this->url;
+		}
+		
+		public function modified() {
+			return $this->modified;
+		}
+		
+		public function size() {
+			return $this->size;
+		}
+		
+		public function niceSize($decimals = 2, $decimalPoint = '.', $thousandsSeparator = '') {
+			$sizes = array(' B', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB');
+			if(empty($this->size)) {
+				return '0,00 MB';
+			} else {
+				return (number_format($this->size/pow(1024, ($i = floor(log($this->size, 1024)))), $decimals, $decimalPoint, $thousandsSeparator).$sizes[$i]);
+			}
+		}
+
+	}
+
 }
 
 namespace papprika\MySQL {
