@@ -79,7 +79,7 @@ namespace papprika {
 			$patterns = array_shift($arguments);
 			$callbacks = array();
 			if(count($arguments) > 0) {
-				foreach($arguments AS $argument) {
+				foreach($arguments as $argument) {
 					if(is_callable($argument)) {
 						$callbacks[] = $argument;
 					}
@@ -87,7 +87,7 @@ namespace papprika {
 			}
 			if(count($callbacks) > 0) {
 				if(is_array($patterns)) {
-					foreach($patterns AS $pattern) {
+					foreach($patterns as $pattern) {
 						$this->routes[$method][$pattern] = $callbacks;
 					}
 					$this->last = $patterns;
@@ -118,7 +118,7 @@ namespace papprika {
 		private function event($event, $arguments) {
 			$callbacks = array();
 			if(count($arguments) > 0) {
-				foreach($arguments AS $argument) {
+				foreach($arguments as $argument) {
 					if(is_callable($argument)) {
 						$callbacks[] = $argument;
 					}
@@ -132,7 +132,7 @@ namespace papprika {
 	
 		// Triggers events
 		private function trigger($type) {
-			foreach($this->events[$type] AS $event) {
+			foreach($this->events[$type] as $event) {
 				call_user_func($event);
 			}
 		}
@@ -140,7 +140,7 @@ namespace papprika {
 		// Simple unit testing
 		public function assert($variable, $condition) {
 			if(!empty($this->last)) {
-				foreach($this->last AS $pattern) {
+				foreach($this->last as $pattern) {
 					$this->conditions[$pattern][] = array($variable, $condition);
 				}
 			}
@@ -151,12 +151,12 @@ namespace papprika {
 		public function run() {
 			$found = false;
 			$this->trigger('before');
-			foreach($this->routes[$this->method] AS $pattern => $callbacks) {
+			foreach($this->routes[$this->method] as $pattern => $callbacks) {
 				$route = array();
 				$variables = array();
 				$conditions = $this->conditions[$pattern] ?: array();
 				$pattern = $this->sub.$pattern;
-				foreach(preg_split('~/~', $pattern, -1, PREG_SPLIT_NO_EMPTY) AS $part) {
+				foreach(preg_split('~/~', $pattern, -1, PREG_SPLIT_NO_EMPTY) as $part) {
 					preg_match('/^\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$/', $part, $matches);		
 					if(!empty($matches[1])) {
 						$variables[] = $matches[1];
@@ -170,17 +170,17 @@ namespace papprika {
 					preg_match_all('/^\/'.implode('\/', $route).'$/', $this->uri, $matches);
 					if(!empty($matches[1])) {
 						$i = 0;
-						foreach($matches[1] AS $match) {
+						foreach($matches[1] as $match) {
 							$parameters[$variables[$i]] = $match;
 							$i++;
 						}
 					}
-					foreach($conditions AS $condition) {
+					foreach($conditions as $condition) {
 						if(!preg_match('/^'.$condition[1].'$/', $parameters[$condition[0]])) {
 							continue 2;
 						}
 					}
-					foreach($callbacks AS $callback) {
+					foreach($callbacks as $callback) {
 						call_user_func_array($callback, $parameters);
 					}
 					$found = true;
@@ -209,7 +209,7 @@ namespace papprika {
 			}
 			$this->_file = $file;
 			if(!empty($data)) {
-				foreach($data AS $key => $value) {
+				foreach($data as $key => $value) {
 					$this->_data->$key = $value;
 				}
 			}
@@ -317,7 +317,7 @@ namespace papprika {
 		public function niceSize($decimals = 2, $decimalPoint = '.', $thousandsSeparator = '') {
 			$sizes = array(' B', ' KB', ' MB', ' GB', ' TB', ' PB', ' EB', ' ZB', ' YB');
 			if(empty($this->size)) {
-				return '0,00 MB';
+				return '0.00 MB';
 			} else {
 				return (number_format($this->size/pow(1024, ($i = floor(log($this->size, 1024)))), $decimals, $decimalPoint, $thousandsSeparator).$sizes[$i]);
 			}
@@ -370,11 +370,11 @@ namespace papprika\MySQL {
 	
 		// Initialize
 		public function __construct($server, $username, $password, $database) {
-			$link = @mysql_connect($server, $username, $password);
+			$link = mysql_connect($server, $username, $password);
 			if(!$link) {
 				throw new \Exception('Couldn\'t connect to MySQL ('.mysql_error().').');
 			}
-			if(!@mysql_select_db($database, $link)) {
+			if(!mysql_select_db($database, $link)) {
 				throw new \Exception('Couldn\'t use Database "'.$database.'" ('.mysql_error().').');
 			}
 			$this->link = $link;
@@ -414,7 +414,7 @@ namespace papprika\MySQL {
 			}
 			$this->link = $link->get();
 			if(count($arguments) > 0) {
-				foreach($arguments AS $key => $val) {
+				foreach($arguments as $key => $val) {
 					$arguments[$key] = mysql_real_escape_string($val, $this->link);
 				}
 				$query = vsprintf($query, $arguments);
