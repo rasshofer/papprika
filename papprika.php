@@ -154,7 +154,7 @@ namespace papprika {
 			foreach($this->routes[$this->method] as $pattern => $callbacks) {
 				$route = array();
 				$variables = array();
-				$conditions = $this->conditions[$pattern] ?: array();
+				$conditions = array_key_exists($pattern, $this->conditions) ? $this->conditions[$pattern] : array();
 				$pattern = $this->sub.$pattern;
 				foreach(preg_split('~/~', $pattern, -1, PREG_SPLIT_NO_EMPTY) as $part) {
 					preg_match('/^\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$/', $part, $matches);		
