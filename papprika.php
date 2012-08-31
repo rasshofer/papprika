@@ -156,22 +156,18 @@ namespace papprika {
 				$variables = array();
 				$conditions = array_key_exists($pattern, $this->conditions) ? $this->conditions[$pattern] : array();
 				$pattern = $this->sub.$pattern;
-				$i = 0;
 				foreach(preg_split('~/~', $pattern, -1) as $part) {
-					if($i > 0) {						
-						preg_match('/^\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$/', $part, $matches);		
-						if(!empty($matches[1])) {
-							$variables[] = $matches[1];
-							$route[] = '([^\/]+)';
-						} else {
-							$route[] = preg_quote($part);
-						}
+					preg_match('/^\:([a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*)$/', $part, $matches);		
+					if(!empty($matches[1])) {
+						$variables[] = $matches[1];
+						$route[] = '([^\/]+)';
+					} else {
+						$route[] = preg_quote($part);
 					}
-					$i++;
 				}
-				if(preg_match('/^\/'.implode('\/', $route).'$/', $this->uri)) {
+				if(preg_match('/^'.implode('\/', $route).'$/', $this->uri)) {
 					$parameters = array();
-					preg_match_all('/^\/'.implode('\/', $route).'$/', $this->uri, $matches);
+					preg_match_all('/^'.implode('\/', $route).'$/', $this->uri, $matches);
 					if(!empty($matches[1])) {
 						$i = 0;
 						foreach($matches[1] as $match) {
