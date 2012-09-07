@@ -74,6 +74,11 @@ namespace papprika {
 			return $this->route('delete', func_get_args());
 		}
 	
+		// Any route (GET, POST, PUT or DELETE)
+		public function any() {
+			return $this->route('any', func_get_args());
+		}
+
 		// Add route
 		private function route($method, $arguments) {
 			$patterns = array_shift($arguments);
@@ -86,14 +91,17 @@ namespace papprika {
 				}
 			}
 			if(count($callbacks) > 0) {
-				if(is_array($patterns)) {
-					foreach($patterns as $pattern) {
-						$this->routes[$method][$pattern] = $callbacks;
+				$methods = ($method == 'any') ? array('get', 'post', 'put', 'delete') : array($method);
+				foreach($methods as $method) {
+					if(is_array($patterns)) {
+						foreach($patterns as $pattern) {
+							$this->routes[$method][$pattern] = $callbacks;
+						}
+						$this->last = $patterns;
+					} else {
+						$this->routes[$method][$patterns] = $callbacks;
+						$this->last = array($patterns);
 					}
-					$this->last = $patterns;
-				} else {
-					$this->routes[$method][$patterns] = $callbacks;
-					$this->last = array($patterns);
 				}
 			}
 			return $this;
