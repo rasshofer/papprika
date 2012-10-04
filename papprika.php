@@ -217,6 +217,7 @@ namespace papprika {
 			}
 			$this->_file = $file;
 			if(!empty($data)) {
+				$this->_data = new \stdClass();
 				foreach($data as $key => $value) {
 					$this->_data->$key = $value;
 				}
