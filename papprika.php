@@ -7,7 +7,6 @@
  * @copyright 2012 Thomas Rasshofer
  * @link http://papprika.org/
  * @license http://papprika.org/license
- * @version 0.2
  * @package papprika
  */
 
@@ -18,6 +17,7 @@ namespace papprika {
 	
 		private $uri;
 		private $sub;
+		private $insensitive = false;
 		private $routes = array();
 		private $events = array();
 		private $method;
@@ -44,6 +44,14 @@ namespace papprika {
 			} else if($this->method == 'post') {
 				$this->request = $_POST;
 			}
+		}
+
+		// Case-insensitive routes
+		public function insensitive($set) {
+			if(is_bool($set)) {
+				$this->insensitive = $set;
+			}
+			return $this;
 		}
 		
 		// Returns selected parameter depending on the request-method
@@ -159,6 +167,7 @@ namespace papprika {
 		public function run() {
 			$found = false;
 			$this->trigger('before');
+			$delimiter = $this->insensitive ? 'i' : '';
 			foreach($this->routes[$this->method] as $pattern => $callbacks) {
 				$route = array();
 				$variables = array();
@@ -173,9 +182,9 @@ namespace papprika {
 						$route[] = preg_quote($part);
 					}
 				}
-				if(preg_match('/^'.implode('\/', $route).'$/', $this->uri)) {
+				if(preg_match('/^'.implode('\/', $route).'$/'.$delimiter, $this->uri)) {
 					$parameters = array();
-					preg_match_all('/^'.implode('\/', $route).'$/', $this->uri, $matches);
+					preg_match_all('/^'.implode('\/', $route).'$/'.$delimiter, $this->uri, $matches);
 					if(!empty($matches[1])) {
 						$i = 0;
 						foreach($matches[1] as $match) {
@@ -375,34 +384,20 @@ namespace papprika\MySQL {
 	// papprika\MySQL\Connection
 	class Connection {
 	
-		private $link = null;
+		public $mysqli = null;
 	
 		// Initialize
 		public function __construct($server, $username, $password, $database) {
-			$link = mysql_connect($server, $username, $password);
-			if(!$link) {
-				throw new \Exception('Couldn\'t connect to MySQL ('.mysql_error().').');
+			$mysqli = new \MySQLi($server, $username, $password, $database);
+			if($mysqli->connect_errno) {
+				throw new \Exception('Couldn\'t connect to MySQL ('.$mysqli->connect_error.').');
 			}
-			if(!mysql_select_db($database, $link)) {
-				throw new \Exception('Couldn\'t use Database "'.$database.'" ('.mysql_error().').');
-			}
-			$this->link = $link;
+			$this->mysqli = $mysqli;
 		}
-	
-		// Close connection
-		public function __destruct() {
-			return mysql_close($this->link);
-			return false;
-		}
-		
-		// Get link
-		public function get() {
-			return $this->link;
-		}
-		
+				
 		// Set charset
 		public function charset($charset) {
-			return mysql_set_charset($charset, $this->link);	
+			return $this->mysqli->set_charset($charset);	
 		}
 	
 	}
@@ -410,27 +405,27 @@ namespace papprika\MySQL {
 	// papprika\MySQL\Query
 	class Query {
 	
-		private $link;
+		private $mysqli;
 		private $result;
 		
 		// Initialize
 		public function __construct() {
 			$arguments = func_get_args();
 			$query = array_shift($arguments);
-			$link = array_pop($arguments);
-			if(get_class($link) != 'papprika\MySQL\Connection') {
+			$mysqli = array_pop($arguments);
+			if(get_class($mysqli) != 'papprika\MySQL\Connection') {
 				throw new \Exception('Missing MySQL-Connection-Link.');
 			}
-			$this->link = $link->get();
+			$this->mysqli = $mysqli->mysqli;
 			if(count($arguments) > 0) {
 				foreach($arguments as $key => $val) {
-					$arguments[$key] = mysql_real_escape_string($val, $this->link);
+					$arguments[$key] = $this->mysqli->real_escape_string($val);
 				}
 				$query = vsprintf($query, $arguments);
 			}
-			$result = mysql_query($query, $this->link);
+			$result = $this->mysqli->query($query);
 			if(!$result) {
-				throw new \Exception('Invalid MySQL-Query ('.mysql_error().').');
+				throw new \Exception('Invalid MySQL-Query ('.$this->mysqli->error.').');
 			}
 			$this->result = $result;
 			return $this;
@@ -438,24 +433,24 @@ namespace papprika\MySQL {
 		
 		public function __destruct() {
 			if(is_resource($this->result)) {
-				mysql_free_result($this->result);
+				$this->result->close();
 			}
 		}
 	
 		public function fetch() {
-			return mysql_fetch_object($this->result);	
+			return $this->result->fetch_object();
 		}
 		
 		public function id() {
-			return mysql_insert_id($this->link);	
+			return mysql_insert_id($this->mysqli);	
 		}
 		
 		public function rows() {
-			return mysql_num_rows($this->result);	
+			return $this->result->num_rows;
 		}
 	
 		public function affected() {
-			return mysql_affected_rows($this->link);	
+			return $this->result->affected_rows;
 		}
 	
 	}
