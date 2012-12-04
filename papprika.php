@@ -442,7 +442,7 @@ namespace papprika\MySQL {
 		}
 		
 		public function id() {
-			return mysql_insert_id($this->mysqli);	
+			return $this->mysqli->insert_id;	
 		}
 		
 		public function rows() {
