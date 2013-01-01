@@ -3,10 +3,10 @@
 /**
  * papprika – small but spicy application toolkit
  *
- * @author Thomas Rasshofer <tr@papprika.org>
- * @copyright 2012 Thomas Rasshofer
- * @link http://papprika.org/
- * @license http://papprika.org/license
+ * @author Thomas Rasshofer <me@thomasrasshofer.com>
+ * @copyright 2013 Thomas Rasshofer
+ * @link http://papprika.thomasrasshofer.com/
+ * @license http://papprika.thomasrasshofer.com/license
  * @package papprika
  */
 
@@ -153,7 +153,7 @@ namespace papprika {
 			}
 		}
 	
-		// Simple unit testing
+		// Conditions
 		public function assert($variable, $condition) {
 			if(!empty($this->last)) {
 				foreach($this->last as $pattern) {
