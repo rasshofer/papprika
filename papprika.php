@@ -87,6 +87,24 @@ namespace papprika {
 			return $this->route('any', func_get_args());
 		}
 
+		// Add routes from a configuration file
+		public function ini($file) {
+			if(file_exists($file) && function_exists('parse_ini_file')) {
+				$ini = parse_ini_file($file, true);
+				if($ini) {
+					$ini = array_change_key_case($ini, CASE_LOWER);
+					foreach(array('get', 'post', 'put', 'delete', 'any') as $method) {
+						if(array_key_exists($method, $ini)) {
+							foreach($ini[$method] as $pattern => $callback) {
+								$this->$method($pattern, $callback);
+							}
+						}	
+					}
+				}
+			}
+			return $this;
+		}
+
 		// Add route
 		private function route($method, $arguments) {
 			$patterns = array_shift($arguments);
@@ -111,7 +129,7 @@ namespace papprika {
 						$this->last = array($patterns);
 					}
 				}
-			}
+			}			
 			return $this;
 		}
 	
