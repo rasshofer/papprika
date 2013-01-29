@@ -189,7 +189,7 @@ namespace papprika {
 						$matches = array_slice($matches[0], 1);
 						$i = 0;
 						foreach($matches as $match) {
-							$parameters[$variables[$i]] = $match[0];
+							$parameters[$variables[$i]] = $match;
 							$i++;
 						}
 					}
