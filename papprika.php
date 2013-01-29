@@ -167,7 +167,7 @@ namespace papprika {
 		public function run() {
 			$found = false;
 			$this->trigger('before');
-			$delimiter = $this->insensitive ? 'i' : '';
+			$modifier = $this->insensitive ? 'i' : '';			
 			foreach($this->routes[$this->method] as $pattern => $callbacks) {
 				$route = array();
 				$variables = array();
@@ -182,13 +182,14 @@ namespace papprika {
 						$route[] = preg_quote($part);
 					}
 				}
-				if(preg_match('/^'.implode('\/', $route).'$/'.$delimiter, $this->uri)) {
+				if(preg_match('/^'.implode('\/', $route).'$/'.$modifier, $this->uri)) {
 					$parameters = array();
-					preg_match_all('/^'.implode('\/', $route).'$/'.$delimiter, $this->uri, $matches);
-					if(!empty($matches[1])) {
+					preg_match_all('/^'.implode('\/', $route).'$/'.$modifier, $this->uri, $matches, PREG_SET_ORDER);
+					if(!empty($matches)) {
+						$matches = array_slice($matches[0], 1);
 						$i = 0;
-						foreach($matches[1] as $match) {
-							$parameters[$variables[$i]] = $match;
+						foreach($matches as $match) {
+							$parameters[$variables[$i]] = $match[0];
 							$i++;
 						}
 					}
