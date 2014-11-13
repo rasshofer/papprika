@@ -1,4 +1,4 @@
-# papprika – small but spicy application toolkit
+# papprika
 
 > papprika is a small but spicy application toolkit created to help you building awesome RESTful web applications with ease.
 
@@ -6,7 +6,7 @@ papprika ~~is in active development,~~ (see note below) offers you everything yo
 
 ## Deprecation (* 2012 † 2014)
 
-Please note that papprika is deprecated as of 2014. This repository is kept alive in order to provide the neccessary documentation for maintaining existing papprika projects. If you’re looking for an alternative to papprika, you should have a look at the awesome [Silex micro-framework](https://github.com/silexphp/Silex) and all the wonderful [Symfony components](http://symfony.com/de/components).
+Please note that papprika is abandoned and no longer maintained as of 2014. This repository is kept alive in order to provide the neccessary documentation for maintaining existing papprika projects. If you’re looking for an alternative to papprika, you should have a look at the awesome [Silex micro-framework](https://github.com/silexphp/Silex) and all the wonderful [Symfony components](http://symfony.com/de/components).
 
 ## Yet another PHP toolkit?
 
@@ -124,7 +124,7 @@ $app->get('/news', function() use ($news) {
 
 Visiting `/news` will return a list of news. The `use`-statement tells the closure to import the `$news`-variable from the outer scope, which allows us to use it within the closure.
 
-### Dynamic Routing
+### Dynamic routing
 
 Now we need another controller for viewing individual news, which is realized through dynamic routing.
 
@@ -339,7 +339,7 @@ while($post = $res->fetch()) {
 echo '</ul>';
 ```
 
-Besides the `fetch`-method, there are three other methods which may also be interessting for your daily database business.
+Besides the `fetch` method, there are three other methods which may also be interessting for your daily database business.
 
 ### Get rows
 
